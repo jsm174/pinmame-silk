@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET" Version="2.3.0" />
+    <!-- <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.3.0" /> -->
+    <PackageReference Include="PinMame" Version="0.1.0-preview.27" />
+    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.204" />
+    <PackageReference Include="NLog" Version="4.7.9" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <EmbeddedResource Include="Shaders/Blur.frag" />
+    <EmbeddedResource Include="Shaders/Blur.vert" />
+    <EmbeddedResource Include="Shaders/Dmd.frag" />
+    <EmbeddedResource Include="Shaders/Dmd.vert" />
+    <EmbeddedResource Include="Shaders/Convert.frag" />
+    <EmbeddedResource Include="Shaders/Convert.vert" />
+ </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenGL\Extensions\Silk.NET.OpenGL.Extensions.ImGui\Silk.NET.OpenGL.Extensions.ImGui.csproj" />
+  </ItemGroup>
+</Project>
