@@ -60,6 +60,11 @@ namespace PinMameSilk
 
         public bool IsRunning => PinMame.PinMame.IsRunning;
 
+        public void SetSwitch(int slot, bool state)
+        {
+            _pinMame.SetSwitch(slot, state);
+        }
+
         public void Stop()
         {
             Logger.Info("Stop");

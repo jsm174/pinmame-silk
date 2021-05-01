@@ -22,15 +22,14 @@ namespace PinMameSilk
         private PinMameController _pinMameController;
         private DmdController _dmdController;
 
-        public static UIOverlayController Instance(IView window, GL gl) =>
-            _instance ?? (_instance = new UIOverlayController(window, gl));
+        public static UIOverlayController Instance(IView window, IInputContext input, GL gl) =>
+            _instance ?? (_instance = new UIOverlayController(window, input, gl));
 
-        private UIOverlayController(IView window, GL gl)
+        private UIOverlayController(IView window, IInputContext input, GL gl)
         {
             _window = window;
+            _input = input;
 
-            _input = _window.CreateInput();
-            
             _imGuiController = new ImGuiController(
                gl,
                window,
@@ -38,7 +37,39 @@ namespace PinMameSilk
 
             _pinMameController = PinMameController.Instance();
             _dmdController = DmdController.Instance();
+
+            foreach(var keyboard in _input.Keyboards)
+            {
+                keyboard.KeyDown += (arg1, arg2, arg3) =>
+                {
+                    if (arg2 == Key.Z)
+                    {
+                        _pinMameController.Reset();
+                    }
+                    else if (arg2 == Key.Number5)
+                    {
+                        _pinMameController.SetSwitch(1, true);
+                    }
+                    else if (arg2 == Key.Number1)
+                    {
+                        _pinMameController.SetSwitch(13, true);
+                    }
+                };
+
+                keyboard.KeyUp += (arg1, arg2, arg3) =>
+                {
+                    if (arg2 == Key.Number5)
+                    {
+                        _pinMameController.SetSwitch(1, false);
+                    }
+                    else if (arg2 == Key.Number1)
+                    {
+                        _pinMameController.SetSwitch(13, false);
+                    }
+                };
+            }
         }
+
 
         public void Render(double delta)
         {

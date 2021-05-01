@@ -1,6 +1,7 @@
 ﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -29,12 +30,14 @@ namespace PinMameSilk
 
             DmdController dmdController = null;
             UIOverlayController uiOverlayController = null;
-
+           
             window.Load += () =>
             {
+                var input = window.CreateInput();
+                
                 dmdController = DmdController.Instance(window);
-                uiOverlayController = UIOverlayController.Instance(window, gl);
-
+                uiOverlayController = UIOverlayController.Instance(window, input, gl);
+             
                 // (ImGui needs resize message first)
 
                 window.Resize += (size) =>
