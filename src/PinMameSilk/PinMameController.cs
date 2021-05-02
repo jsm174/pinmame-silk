@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using LibDmd;
 using NLog;
 using Silk.NET.Input;
@@ -54,26 +55,26 @@ namespace PinMameSilk
                 { Key.X, PinMame.PinMameKeycode.X },
                 { Key.Y, PinMame.PinMameKeycode.Y },
                 { Key.Z, PinMame.PinMameKeycode.Z },
-                { Key.Number0, PinMame.PinMameKeycode.Num0 },
-                { Key.Number1, PinMame.PinMameKeycode.Num1 },
-                { Key.Number2, PinMame.PinMameKeycode.Num2 },
-                { Key.Number3, PinMame.PinMameKeycode.Num3 },
-                { Key.Number4, PinMame.PinMameKeycode.Num4 },
-                { Key.Number5, PinMame.PinMameKeycode.Num5 },
-                { Key.Number6, PinMame.PinMameKeycode.Num6 },
-                { Key.Number7, PinMame.PinMameKeycode.Num7 },
-                { Key.Number8, PinMame.PinMameKeycode.Num8 },
-                { Key.Number9, PinMame.PinMameKeycode.Num9 },
-                { Key.Keypad0, PinMame.PinMameKeycode.Num0Pad },
-                { Key.Keypad1, PinMame.PinMameKeycode.Num1Pad },
-                { Key.Keypad2, PinMame.PinMameKeycode.Num2Pad },
-                { Key.Keypad3, PinMame.PinMameKeycode.Num3Pad },
-                { Key.Keypad4, PinMame.PinMameKeycode.Num4Pad },
-                { Key.Keypad5, PinMame.PinMameKeycode.Num5Pad },
-                { Key.Keypad6, PinMame.PinMameKeycode.Num6Pad },
-                { Key.Keypad7, PinMame.PinMameKeycode.Num7Pad },
-                { Key.Keypad8, PinMame.PinMameKeycode.Num8Pad },
-                { Key.Keypad9, PinMame.PinMameKeycode.Num9Pad },
+                { Key.Number0, PinMame.PinMameKeycode.Number0 },
+                { Key.Number1, PinMame.PinMameKeycode.Number1 },
+                { Key.Number2, PinMame.PinMameKeycode.Number2 },
+                { Key.Number3, PinMame.PinMameKeycode.Number3 },
+                { Key.Number4, PinMame.PinMameKeycode.Number4 },
+                { Key.Number5, PinMame.PinMameKeycode.Number5 },
+                { Key.Number6, PinMame.PinMameKeycode.Number6 },
+                { Key.Number7, PinMame.PinMameKeycode.Number7 },
+                { Key.Number8, PinMame.PinMameKeycode.Number8 },
+                { Key.Number9, PinMame.PinMameKeycode.Number9 },
+                { Key.Keypad0, PinMame.PinMameKeycode.Keypad0 },
+                { Key.Keypad1, PinMame.PinMameKeycode.Keypad1 },
+                { Key.Keypad2, PinMame.PinMameKeycode.Keypad2 },
+                { Key.Keypad3, PinMame.PinMameKeycode.Keypad3 },
+                { Key.Keypad4, PinMame.PinMameKeycode.Keypad4 },
+                { Key.Keypad5, PinMame.PinMameKeycode.Keypad5 },
+                { Key.Keypad6, PinMame.PinMameKeycode.Keypad6 },
+                { Key.Keypad7, PinMame.PinMameKeycode.Keypad7 },
+                { Key.Keypad8, PinMame.PinMameKeycode.Keypad8 },
+                { Key.Keypad9, PinMame.PinMameKeycode.Keypad9 },
                 { Key.F1, PinMame.PinMameKeycode.F1 },
                 { Key.F2, PinMame.PinMameKeycode.F2 },
                 { Key.F3, PinMame.PinMameKeycode.F3 },
@@ -87,24 +88,23 @@ namespace PinMameSilk
                 { Key.F11, PinMame.PinMameKeycode.F11 },
                 { Key.F12, PinMame.PinMameKeycode.F12 },
                 { Key.Escape, PinMame.PinMameKeycode.Escape },
-                { Key.GraveAccent, PinMame.PinMameKeycode.Tilde },
+                { Key.GraveAccent, PinMame.PinMameKeycode.GraveAccent },
                 { Key.Minus, PinMame.PinMameKeycode.Minus },
                 { Key.Equal, PinMame.PinMameKeycode.Equals },
                 { Key.Backspace, PinMame.PinMameKeycode.Backspace },
                 { Key.Tab, PinMame.PinMameKeycode.Tab },
-                { Key.LeftBracket, PinMame.PinMameKeycode.OpenBrace },
-                { Key.RightBracket, PinMame.PinMameKeycode.CloseBrace },
+                { Key.LeftBracket, PinMame.PinMameKeycode.LeftBracket },
+                { Key.RightBracket, PinMame.PinMameKeycode.RightBracket },
                 { Key.Enter, PinMame.PinMameKeycode.Enter },
-                { Key.Semicolon, PinMame.PinMameKeycode.Colon },
+                { Key.Semicolon, PinMame.PinMameKeycode.Semicolon },
                 { Key.Apostrophe, PinMame.PinMameKeycode.Quote },
                 { Key.BackSlash, PinMame.PinMameKeycode.Backslash },
-                //{ Key.BACKSLASH2, PinMame.PinMameKeycode.BACKSLASH2 },
                 { Key.Comma, PinMame.PinMameKeycode.Comma },
-                //{ Key.STOP, PinMame.PinMameKeycode.STOP },
+                { Key.Period, PinMame.PinMameKeycode.Period },
                 { Key.Slash, PinMame.PinMameKeycode.Slash },
                 { Key.Space, PinMame.PinMameKeycode.Space },
                 { Key.Insert, PinMame.PinMameKeycode.Insert },
-                { Key.Delete, PinMame.PinMameKeycode.Del },
+                { Key.Delete, PinMame.PinMameKeycode.Delete },
                 { Key.Home, PinMame.PinMameKeycode.Home },
                 { Key.End, PinMame.PinMameKeycode.End },
                 { Key.PageUp, PinMame.PinMameKeycode.PageUp },
@@ -113,12 +113,11 @@ namespace PinMameSilk
                 { Key.Right, PinMame.PinMameKeycode.Right },
                 { Key.Up, PinMame.PinMameKeycode.Up },
                 { Key.Down, PinMame.PinMameKeycode.Down },
-                { Key.KeypadDivide, PinMame.PinMameKeycode.SlashPad },
-                { Key.KeypadMultiply, PinMame.PinMameKeycode.Asterisk },
-                { Key.KeypadSubtract, PinMame.PinMameKeycode.MinusPad },
-                { Key.KeypadAdd, PinMame.PinMameKeycode.PlusPad },
-                //{ Key.DEL_PAD, PinMame.PinMameKeycode.DEL_PAD },
-                { Key.KeypadEnter, PinMame.PinMameKeycode.EnterPad },
+                { Key.KeypadDivide, PinMame.PinMameKeycode.KeypadDivide },
+                { Key.KeypadMultiply, PinMame.PinMameKeycode.KeypadMultiply },
+                { Key.KeypadSubtract, PinMame.PinMameKeycode.KeypadSubtract },
+                { Key.KeypadAdd, PinMame.PinMameKeycode.KeypadAdd },
+                { Key.KeypadEnter, PinMame.PinMameKeycode.KeypadEnter },
                 { Key.PrintScreen, PinMame.PinMameKeycode.PrintScreen },
                 { Key.Pause, PinMame.PinMameKeycode.Pause },
                 { Key.ShiftLeft, PinMame.PinMameKeycode.LeftShift },
@@ -127,46 +126,16 @@ namespace PinMameSilk
                 { Key.ControlRight, PinMame.PinMameKeycode.RightControl },
                 { Key.AltLeft, PinMame.PinMameKeycode.LeftAlt },
                 { Key.AltRight, PinMame.PinMameKeycode.RightAlt },
-                //{ Key.ScrollLock, PinMame.PinMameKeycode.ScrollLock },
+                { Key.ScrollLock, PinMame.PinMameKeycode.ScrollLock },
                 { Key.NumLock, PinMame.PinMameKeycode.NumLock },
-                { Key.CapsLock, PinMame.PinMameKeycode.CapsLOCK },
-                //{ Key.LWIN, PinMame.PinMameKeycode.LWIN },
-                //{ Key.RWIN, PinMame.PinMameKeycode.RWIN },
+                { Key.CapsLock, PinMame.PinMameKeycode.CapsLock },
+                { Key.SuperLeft, PinMame.PinMameKeycode.LeftSuper },
+                { Key.SuperRight, PinMame.PinMameKeycode.RightSuper },
                 { Key.Menu, PinMame.PinMameKeycode.Menu }
         };
        
         private PinMameController(IInputContext input)
         {
-            _input = input;
-
-            foreach (var keyboard in _input.Keyboards)
-            {
-                keyboard.KeyDown += (arg1, arg2, arg3) =>
-                {
-                    
-                    if (_keycodeMap.TryGetValue(arg2, out var keycode))
-                    {
-                        int keycodeInt = (int)keycode;
-
-                        Logger.Info($"KeyDown() {keycode} ({keycodeInt})");
-
-                        _keys[(int)keycode] = 1;
-                    }
-                };
-
-                keyboard.KeyUp += (arg1, arg2, arg3) =>
-                {
-                    if (_keycodeMap.TryGetValue(arg2, out var keycode))
-                    {
-                        int keycodeInt = (int)keycode;
-
-                        Logger.Info($"KeyUp() {keycode} ({keycodeInt})");
-
-                        _keys[(int)keycode] = 0;
-                    }
-                };
-            }
-
             _pinMame = PinMame.PinMame.Instance();
 
             _pinMame.OnGameStarted += OnGameStarted;
@@ -176,13 +145,39 @@ namespace PinMameSilk
             _pinMame.IsKeyPressed += IsKeyPressed;
 
             _dmdController = DmdController.Instance();
+
+            _input = input;
+
+            foreach (var keyboard in _input.Keyboards)
+            {
+                keyboard.KeyDown += (arg1, arg2, arg3) =>
+                {
+
+                    if (_keycodeMap.TryGetValue(arg2, out var keycode))
+                    {
+                        Logger.Trace($"KeyDown() {keycode} ({(int)keycode})");
+
+                        _keys[(int)keycode] = 1;
+                    }
+                };
+
+                keyboard.KeyUp += (arg1, arg2, arg3) =>
+                {
+                    if (_keycodeMap.TryGetValue(arg2, out var keycode))
+                    {
+                        Logger.Trace($"KeyUp() {keycode} ({(int)keycode})");
+
+                        _keys[(int)keycode] = 0;
+                    }
+                };
+            }
         }
 
         public List<PinMame.PinMameGame> GetGames(bool forceRefresh = false)
         {
             if (_games == null || forceRefresh)
             {
-                _games = (List<PinMame.PinMameGame>)_pinMame.GetFoundGames();
+                _games = _pinMame.GetFoundGames().OrderBy(g => g.Name).ToList();
             }
 
             return _games;
@@ -239,7 +234,8 @@ namespace PinMameSilk
 
             if (displayLayout.IsDmd)
             {
-                _dmdController.SetLayout(displayLayout.Levels, displayLayout.Width, displayLayout.Height);
+                _dmdController.SetLayout(
+                    displayLayout.Levels.Keys.Skip(displayLayout.Depth == 2 ? 1 : 0).ToArray(), displayLayout.Width, displayLayout.Height);
             }
         }
 
