@@ -10,8 +10,8 @@
   <ItemGroup>
     <PackageReference Include="Silk.NET" Version="2.3.0" />
     <!-- <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.3.0" /> -->
-    <PackageReference Include="PinMame" Version="0.1.0-preview.28" />
-    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.205" />
+    <PackageReference Include="PinMame" Version="0.1.0-preview.29" />
+    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.210" />
     <PackageReference Include="NLog" Version="4.7.9" />
   </ItemGroup>
 

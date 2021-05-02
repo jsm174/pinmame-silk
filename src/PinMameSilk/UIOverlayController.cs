@@ -35,39 +35,8 @@ namespace PinMameSilk
                window,
                _input);
 
-            _pinMameController = PinMameController.Instance();
+            _pinMameController = PinMameController.Instance(_input);
             _dmdController = DmdController.Instance();
-
-            foreach(var keyboard in _input.Keyboards)
-            {
-                keyboard.KeyDown += (arg1, arg2, arg3) =>
-                {
-                    if (arg2 == Key.Z)
-                    {
-                        _pinMameController.Reset();
-                    }
-                    else if (arg2 == Key.Number5)
-                    {
-                        _pinMameController.SetSwitch(1, true);
-                    }
-                    else if (arg2 == Key.Number1)
-                    {
-                        _pinMameController.SetSwitch(13, true);
-                    }
-                };
-
-                keyboard.KeyUp += (arg1, arg2, arg3) =>
-                {
-                    if (arg2 == Key.Number5)
-                    {
-                        _pinMameController.SetSwitch(1, false);
-                    }
-                    else if (arg2 == Key.Number1)
-                    {
-                        _pinMameController.SetSwitch(13, false);
-                    }
-                };
-            }
         }
 
 
