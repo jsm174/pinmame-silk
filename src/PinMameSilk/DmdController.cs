@@ -56,11 +56,10 @@ namespace PinMameSilk
         private readonly uint[] _fbos = new uint[5]; // The 5 FBO used to write to the 5 last textures (dmd, dot glow, intermediate blur, back blur, temp)
         private bool _hasFrame = false;
 
-        private byte[] _levels = new byte[] { 0, 0, 0, 0 };
-        private byte[] _lutIndex = new byte[101];
-        private byte[] _frame = new byte[128 * 32];
+        private Dictionary<byte, byte> _levels;
         private int _dmdWidth;
         private int _dmdHeight;
+        private byte[] _frame;
 
         public static DmdController Instance(IView window = null) =>
             _instance ?? (_instance = new DmdController(window));
@@ -134,21 +133,12 @@ namespace PinMameSilk
             _quadVbo.Unbind(_gl);
         }
 
-        public void SetLayout(byte[] levels, int dmdWidth, int dmdHeight)
+        public void SetLayout(Dictionary<byte, byte> levels, int dmdWidth, int dmdHeight)
         {
             _levels = levels;
             _dmdWidth = dmdWidth;
             _dmdHeight = dmdHeight;
-
-            for (int index = 0; index <= 100; index++)
-            {
-                _lutIndex[index] = 0;
-            }
-
-            for (int index = 0; index < levels.Length; index++)
-            {
-                _lutIndex[levels[index]] = (byte)index;
-            }
+            _frame = new byte[dmdWidth * dmdHeight];
 
             _fboInvalid = true;
             _lutInvalid = true;
@@ -158,13 +148,14 @@ namespace PinMameSilk
         {
             _hasFrame = true;
 
+            var ptr = (byte*)framePtr;
+
             for (var y = 0; y < _dmdHeight; y++)
             {
                 for (var x = 0; x < _dmdWidth; x++)
                 {
-                    var pixel = y * _dmdWidth + x;
-
-                    _frame[pixel] = _lutIndex[((byte*)framePtr)[pixel]];
+                    var pos = y * _dmdWidth + x;
+                    _frame[pos] = _levels[ptr[pos]];
                 }
             }
         }
@@ -308,20 +299,20 @@ namespace PinMameSilk
             {
                 _hasFrame = false;
 
-                if (_lutInvalid)
+                if (_lutInvalid && _levels != null)
                 {
                     _lutInvalid = false;
 
-                    byte[] data = new byte[3 * _levels.Length];
+                    byte[] data = new byte[3 * _levels.Count];
 
-                    for (int i = 0; i < _levels.Length; i++)
+                    foreach (var level in _levels)
                     {
                         var alpha = 1.0f - DmdStyle.Tint.A / 255.0;
                         var beta = DmdStyle.Tint.A / 255.0;
 
-                        int levelR = (int)(_levels[i] / 100f * DotColor.R);
-                        int levelG = (int)(_levels[i] / 100f * DotColor.G);
-                        int levelB = (int)(_levels[i] / 100f * DotColor.B);
+                        int levelR = (int)(level.Key / 100f * DotColor.R);
+                        int levelG = (int)(level.Key / 100f * DotColor.G);
+                        int levelB = (int)(level.Key / 100f * DotColor.B);
 
                         ColorUtil.RgbToHsl((byte)levelR, (byte)levelG, (byte)levelB, out var dotHue, out var dotSat, out var dotLum);
                         ColorUtil.RgbToHsl(DmdStyle.Tint.R, DmdStyle.Tint.G, DmdStyle.Tint.B, out var tintHue, out var tintSat, out var tintLum);
@@ -333,9 +324,9 @@ namespace PinMameSilk
                         var green = (byte)(dotGreen * alpha + tintGreen * beta);
                         var blue = (byte)(dotBlue * alpha + tintBlue * beta);
 
-                        data[i * 3] = red;
-                        data[i * 3 + 1] = green;
-                        data[i * 3 + 2] = blue;
+                        data[level.Value * 3] = red;
+                        data[level.Value * 3 + 1] = green;
+                        data[level.Value * 3 + 2] = blue;
                     }
 
                     _gl.ActiveTexture(GLEnum.Texture1);

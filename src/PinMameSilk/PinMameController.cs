@@ -23,11 +23,6 @@ namespace PinMameSilk
         private List<PinMame.PinMameGame> _games = null;
         private DmdController _dmdController;
 
-        private int[] _keys = new int[128];
-
-        public static PinMameController Instance(IInputContext input = null) =>
-            _instance ?? (_instance = new PinMameController(input));
-
         public static readonly Dictionary<Key, PinMame.PinMameKeycode> _keycodeMap = new Dictionary<Key, PinMame.PinMameKeycode>() {
                 { Key.A, PinMame.PinMameKeycode.A },
                 { Key.B, PinMame.PinMameKeycode.B },
@@ -133,7 +128,12 @@ namespace PinMameSilk
                 { Key.SuperRight, PinMame.PinMameKeycode.RightSuper },
                 { Key.Menu, PinMame.PinMameKeycode.Menu }
         };
-       
+
+        private int[] _keypress = new int[128];
+
+        public static PinMameController Instance(IInputContext input = null) =>
+         _instance ?? (_instance = new PinMameController(input));
+
         private PinMameController(IInputContext input)
         {
             _pinMame = PinMame.PinMame.Instance();
@@ -157,7 +157,7 @@ namespace PinMameSilk
                     {
                         Logger.Trace($"KeyDown() {keycode} ({(int)keycode})");
 
-                        _keys[(int)keycode] = 1;
+                        _keypress[(int)keycode] = 1;
                     }
                 };
 
@@ -167,7 +167,7 @@ namespace PinMameSilk
                     {
                         Logger.Trace($"KeyUp() {keycode} ({(int)keycode})");
 
-                        _keys[(int)keycode] = 0;
+                        _keypress[(int)keycode] = 0;
                     }
                 };
             }
@@ -222,10 +222,9 @@ namespace PinMameSilk
             Logger.Info("OnGameStarted");
         }
 
-
         private int IsKeyPressed(PinMame.PinMameKeycode keycode)
         { 
-            return _keys[(int)keycode];
+            return _keypress[(int)keycode];
         }
 
         private void OnDisplayAvailable(int index, int displayCount, PinMame.PinMameDisplayLayout displayLayout)
@@ -234,8 +233,7 @@ namespace PinMameSilk
 
             if (displayLayout.IsDmd)
             {
-                _dmdController.SetLayout(
-                    displayLayout.Levels.Keys.Skip(displayLayout.Depth == 2 ? 1 : 0).ToArray(), displayLayout.Width, displayLayout.Height);
+                _dmdController.SetLayout(displayLayout.Levels, displayLayout.Width, displayLayout.Height);
             }
         }
 
