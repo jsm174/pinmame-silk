@@ -30,14 +30,16 @@ namespace PinMameSilk
 
             DmdController dmdController = null;
             UIOverlayController uiOverlayController = null;
-           
+            PinMameController pinMameController = null;
+
             window.Load += () =>
             {
                 var input = window.CreateInput();
                 
                 dmdController = DmdController.Instance(window);
                 uiOverlayController = UIOverlayController.Instance(window, input, gl);
-             
+                pinMameController = PinMameController.Instance();
+
                 // (ImGui needs resize message first)
 
                 window.Resize += (size) =>
@@ -46,6 +48,11 @@ namespace PinMameSilk
 
                     window.Size = size;
                 };
+            };
+
+            window.Update += (double obj) =>
+            {
+                pinMameController.UpdateSound();
             };
 
             window.FramebufferResize += (size) =>

@@ -39,7 +39,6 @@ namespace PinMameSilk
             _dmdController = DmdController.Instance();
         }
 
-
         public void Render(double delta)
         {
             _imGuiController.Update((float)delta);

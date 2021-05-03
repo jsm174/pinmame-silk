@@ -5,6 +5,7 @@ using System.Linq;
 using LibDmd;
 using NLog;
 using Silk.NET.Input;
+using Silk.NET.OpenAL;
 
 namespace PinMameSilk
 {
@@ -22,6 +23,14 @@ namespace PinMameSilk
         private PinMame.PinMame _pinMame;
         private List<PinMame.PinMameGame> _games = null;
         private DmdController _dmdController;
+
+        private static int SIZE = (int)(48000);
+        private static int BUFFERS = 2;
+
+        private AL _al;
+        private uint[] _audioBuffers;
+        private uint _audioSource;
+        private short[] _audioBuffer = new short[SIZE];
 
         public static readonly Dictionary<Key, PinMame.PinMameKeycode> _keycodeMap = new Dictionary<Key, PinMame.PinMameKeycode>() {
                 { Key.A, PinMame.PinMameKeycode.A },
@@ -134,7 +143,7 @@ namespace PinMameSilk
         public static PinMameController Instance(IInputContext input = null) =>
          _instance ?? (_instance = new PinMameController(input));
 
-        private PinMameController(IInputContext input)
+        private unsafe PinMameController(IInputContext input)
         {
             _pinMame = PinMame.PinMame.Instance();
 
@@ -170,6 +179,33 @@ namespace PinMameSilk
                         _keypress[(int)keycode] = 0;
                     }
                 };
+            }
+
+            _al = AL.GetApi();
+
+            ALContext alContext = ALContext.GetApi();
+            var device = alContext.OpenDevice("");
+
+            if (device == null)
+            {
+                Console.WriteLine("Could not create device");
+                return;
+            }
+
+            var context = alContext.CreateContext(device, null);
+            alContext.MakeContextCurrent(context);
+
+            _audioSource = _al.GenSource();
+            _audioBuffers = _al.GenBuffers(BUFFERS);
+
+            fixed (void* ptr = _audioBuffer)
+            {
+                for (int index = 0; index < BUFFERS; index++)
+                {
+                    _al.BufferData(_audioBuffers[index], BufferFormat.Stereo16, ptr, SIZE, 48000);
+                }
+
+                _al.SourceQueueBuffers(_audioSource, _audioBuffers);
             }
         }
 
@@ -250,6 +286,35 @@ namespace PinMameSilk
         private void OnGameEnded()
         {
             Logger.Info($"OnGameEnded");
+        }
+
+        public unsafe void UpdateSound()
+        {
+            _al.GetSourceProperty(_audioSource, GetSourceInteger.BuffersProcessed, out int buffersProcessed);
+
+            while (buffersProcessed > 0)
+            {
+                int count = _pinMame.GetPendingAudioSamples(_audioBuffer, 2, SIZE);
+
+                uint buffer = 0;
+                _al.SourceUnqueueBuffers(_audioSource, 1, &buffer);
+
+                fixed (void* ptr = _audioBuffer)
+                {
+                    _al.BufferData(buffer, BufferFormat.Stereo16, ptr, SIZE, 48000);
+                }
+
+                _al.SourceQueueBuffers(_audioSource, 1, &buffer);
+
+                buffersProcessed--;
+            }
+
+            _al.GetSourceProperty(_audioSource, GetSourceInteger.SourceState, out int state);
+
+            if ((SourceState)state != SourceState.Playing)
+            {
+                _al.SourcePlay(_audioSource);
+            }
         }
     }
 }
