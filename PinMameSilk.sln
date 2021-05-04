@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PinMameSilk", "src\PinMameS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silk.NET.OpenGL.Extensions.ImGui", "src\OpenGL\Extensions\Silk.NET.OpenGL.Extensions.ImGui\Silk.NET.OpenGL.Extensions.ImGui.csproj", "{CC4A4E04-4536-4F95-9E39-AD42760E7178}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PinMame", "..\pinmame-dotnet\src\PinMame\PinMame.csproj", "{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

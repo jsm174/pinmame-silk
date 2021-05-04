@@ -24,13 +24,14 @@ namespace PinMameSilk
         private List<PinMame.PinMameGame> _games = null;
         private DmdController _dmdController;
 
-        private static int SIZE = (int)(48000);
         private static int BUFFERS = 2;
+
+        private PinMame.PinMameAudioInfo _audioInfo;
 
         private AL _al;
         private uint[] _audioBuffers;
         private uint _audioSource;
-        private short[] _audioBuffer = new short[SIZE];
+        private short[] _audioBuffer;
 
         public static readonly Dictionary<Key, PinMame.PinMameKeycode> _keycodeMap = new Dictionary<Key, PinMame.PinMameKeycode>() {
                 { Key.A, PinMame.PinMameKeycode.A },
@@ -150,6 +151,8 @@ namespace PinMameSilk
             _pinMame.OnGameStarted += OnGameStarted;
             _pinMame.OnDisplayAvailable += OnDisplayAvailable;
             _pinMame.OnDisplayUpdated += OnDisplayUpdated;
+            _pinMame.OnAudioAvailable += OnAudioAvailable;
+            _pinMame.OnAudioUpdated += OnAudioUpdated;
             _pinMame.OnGameEnded += OnGameEnded;
             _pinMame.IsKeyPressed += IsKeyPressed;
 
@@ -197,16 +200,6 @@ namespace PinMameSilk
 
             _audioSource = _al.GenSource();
             _audioBuffers = _al.GenBuffers(BUFFERS);
-
-            fixed (void* ptr = _audioBuffer)
-            {
-                for (int index = 0; index < BUFFERS; index++)
-                {
-                    _al.BufferData(_audioBuffers[index], BufferFormat.Stereo16, ptr, SIZE, 48000);
-                }
-
-                _al.SourceQueueBuffers(_audioSource, _audioBuffers);
-            }
         }
 
         public List<PinMame.PinMameGame> GetGames(bool forceRefresh = false)
@@ -259,7 +252,7 @@ namespace PinMameSilk
         }
 
         private int IsKeyPressed(PinMame.PinMameKeycode keycode)
-        { 
+        {
             return _keypress[(int)keycode];
         }
 
@@ -283,6 +276,48 @@ namespace PinMameSilk
             }
         }
 
+        private int OnAudioAvailable(PinMame.PinMameAudioInfo audioInfo)
+        {
+            Logger.Info($"OnAudioAvailable: audioInfo={audioInfo}");
+
+            _audioInfo = audioInfo;
+            _audioBuffer = new short[audioInfo.BufferSize];
+
+            unsafe
+            {
+                fixed (void* ptr = _audioBuffer)
+                {
+                    for (int index = 0; index < BUFFERS; index++)
+                    {
+                        _al.BufferData(_audioBuffers[index],
+                          _audioInfo.Channels == 2 ? BufferFormat.Stereo16 : BufferFormat.Mono16,
+                          ptr, _audioInfo.SamplesPerFrame, (int)_audioInfo.SampleRate);
+                    }
+
+                    _al.SourceQueueBuffers(_audioSource, _audioBuffers);
+                }
+            }
+
+            return audioInfo.SamplesPerFrame;
+        }
+
+        private int OnAudioUpdated(IntPtr framePtr, int samples)
+        {
+            Logger.Trace($"OnAudioUpdated");
+
+            unsafe
+            {
+
+                var data = (short*)framePtr;
+
+                for (int loop = 0; loop < samples * 2; loop++)
+                {
+                    _audioBuffer[loop] = data[loop];
+                }
+            }
+            return samples;
+        }
+
         private void OnGameEnded()
         {
             Logger.Info($"OnGameEnded");
@@ -294,14 +329,13 @@ namespace PinMameSilk
 
             while (buffersProcessed > 0)
             {
-                int count = _pinMame.GetPendingAudioSamples(_audioBuffer, 2, SIZE);
-
                 uint buffer = 0;
                 _al.SourceUnqueueBuffers(_audioSource, 1, &buffer);
 
                 fixed (void* ptr = _audioBuffer)
                 {
-                    _al.BufferData(buffer, BufferFormat.Stereo16, ptr, SIZE, 48000);
+                    _al.BufferData(buffer,
+                        _audioInfo.Channels == 2 ? BufferFormat.Stereo16 : BufferFormat.Mono16, ptr, _audioInfo.SamplesPerFrame, (int)_audioInfo.SampleRate);
                 }
 
                 _al.SourceQueueBuffers(_audioSource, 1, &buffer);
