@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.809.7
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PinMameSilk", "src\PinMameSilk\PinMameSilk.csproj", "{FCE9BE39-21ED-47E8-A87D-664FEBCEC367}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silk.NET.OpenGL.Extensions.ImGui", "src\OpenGL\Extensions\Silk.NET.OpenGL.Extensions.ImGui\Silk.NET.OpenGL.Extensions.ImGui.csproj", "{CC4A4E04-4536-4F95-9E39-AD42760E7178}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PinMame", "..\pinmame-dotnet\src\PinMame\PinMame.csproj", "{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PinMameSilk", "src\PinMameSilk\PinMameSilk.csproj", "{B93277ED-7008-4EDB-BC75-9F2F192F12AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FCE9BE39-21ED-47E8-A87D-664FEBCEC367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCE9BE39-21ED-47E8-A87D-664FEBCEC367}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FCE9BE39-21ED-47E8-A87D-664FEBCEC367}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCE9BE39-21ED-47E8-A87D-664FEBCEC367}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC4A4E04-4536-4F95-9E39-AD42760E7178}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CDC4146-9D6B-4CB3-8342-349320BA9BEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B93277ED-7008-4EDB-BC75-9F2F192F12AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B93277ED-7008-4EDB-BC75-9F2F192F12AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B93277ED-7008-4EDB-BC75-9F2F192F12AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B93277ED-7008-4EDB-BC75-9F2F192F12AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

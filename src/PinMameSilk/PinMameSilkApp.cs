@@ -1,6 +1,9 @@
-﻿using NLog;
+﻿using System;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
+using Silk.NET.Core.Contexts;
+using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -26,16 +29,19 @@ namespace PinMameSilk
             options.Title = "PinMAME .NET Silk";
 
             var window = Window.Create(options);
-            var gl = GL.GetApi(window);
 
             DmdController dmdController = null;
             UIOverlayController uiOverlayController = null;
             PinMameController pinMameController = null;
 
+            GL gl = null;
+
             window.Load += () =>
             {
-                var input = window.CreateInput();
+                gl = GL.GetApi(window);
                 
+                var input = window.CreateInput();
+
                 dmdController = DmdController.Instance(window);
                 uiOverlayController = UIOverlayController.Instance(window, input, gl);
                 pinMameController = PinMameController.Instance();
@@ -48,11 +54,6 @@ namespace PinMameSilk
 
                     window.Size = size;
                 };
-            };
-
-            window.Update += (double obj) =>
-            {
-                pinMameController.UpdateSound();
             };
 
             window.FramebufferResize += (size) =>

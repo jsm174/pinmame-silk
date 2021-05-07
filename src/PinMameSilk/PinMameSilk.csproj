@@ -7,12 +7,26 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
+    <RuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$(PlatformTarget)' != 'x86'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$(PlatformTarget)' == 'x86'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- Remove when using custom silk -->
+  <!--
+  <PropertyGroup>
+    <RestoreSources>/Users/jmillard/git/Silk.NET/build/output_packages/;https://api.nuget.org/v3/index.json</RestoreSources>
+  </PropertyGroup>
+  -->
+
   <ItemGroup>
-    <PackageReference Include="Silk.NET" Version="2.3.0" />
-    <PackageReference Include="Silk.NET.OpenAL" Version="2.3.0" />
-    <!-- <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.3.0" /> -->
-    <PackageReference Include="PinMame" Version="0.1.0-preview.34" /> 
-    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.216" /> 
+    <PackageReference Include="Silk.NET" Version="2.4.0" />
+    <PackageReference Include="Silk.NET.OpenAL" Version="2.4.0" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.4.0" />
+    <PackageReference Include="PinMame" Version="0.1.0-preview.36" /> 
+    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.221" /> 
     <PackageReference Include="NLog" Version="4.7.9" />
   </ItemGroup>
 
@@ -25,18 +39,11 @@
     <EmbeddedResource Include="Shaders/Convert.vert" />
  </ItemGroup>
 
- <ItemGroup>
-    <ProjectReference Include="..\OpenGL\Extensions\Silk.NET.OpenGL.Extensions.ImGui\Silk.NET.OpenGL.Extensions.ImGui.csproj" />
- </ItemGroup>
+ <!-- Remove when silk integrates openal -->
 
- <!-- Uncomment when local development -->
- <!--
- <ItemGroup>
-    <ProjectReference Include="..\..\..\pinmame-dotnet\src\PinMame\PinMame.csproj" />
- </ItemGroup>
  <Target Name="Deploy" AfterTargets="Build">
-    <Copy SourceFiles="/Users/jmillard/git/pinmame/build/libpinmame.3.4.dylib" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
- </Target> 
- -->
+    <Copy Condition="'$(RuntimeIdentifier)' == 'win-x64'" SourceFiles="openal-soft/win-x64/soft_oal.dll" DestinationFiles="$(OutDir)/openal32.dll" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(RuntimeIdentifier)' == 'win-x86'" SourceFiles="openal-soft/win-x86/soft_oal.dll" DestinationFiles="$(OutDir)/openal32.dll" SkipUnchangedFiles="true" />
+ </Target>
 
 </Project>

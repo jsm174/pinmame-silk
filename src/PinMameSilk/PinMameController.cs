@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using LibDmd;
 using NLog;
 using Silk.NET.Input;
@@ -24,14 +25,16 @@ namespace PinMameSilk
         private List<PinMame.PinMameGame> _games = null;
         private DmdController _dmdController;
 
-        private static int BUFFERS = 2;
-
         private PinMame.PinMameAudioInfo _audioInfo;
 
         private AL _al;
-        private uint[] _audioBuffers;
         private uint _audioSource;
-        private short[] _audioBuffer;
+        private uint[] _audioBuffers;
+        private readonly Queue<short[]> _audioQueue = new Queue<short[]>();
+        private int _maxAudioBuffers = 4;
+        private int _maxQueueSize = 10;
+        
+        private int cursor;
 
         public static readonly Dictionary<Key, PinMame.PinMameKeycode> _keycodeMap = new Dictionary<Key, PinMame.PinMameKeycode>() {
                 { Key.A, PinMame.PinMameKeycode.A },
@@ -189,17 +192,18 @@ namespace PinMameSilk
             ALContext alContext = ALContext.GetApi();
             var device = alContext.OpenDevice("");
 
-            if (device == null)
+            if (device != null)
             {
-                Console.WriteLine("Could not create device");
-                return;
+                alContext.MakeContextCurrent(
+                    alContext.CreateContext(device, null));
+
+                _audioSource = _al.GenSource();
+                _audioBuffers = _al.GenBuffers(_maxAudioBuffers);
             }
-
-            var context = alContext.CreateContext(device, null);
-            alContext.MakeContextCurrent(context);
-
-            _audioSource = _al.GenSource();
-            _audioBuffers = _al.GenBuffers(BUFFERS);
+            else
+            {
+                Logger.Error("PinMameController(): Could not create device");
+            }
         }
 
         public List<PinMame.PinMameGame> GetGames(bool forceRefresh = false)
@@ -276,66 +280,74 @@ namespace PinMameSilk
             }
         }
 
-        private int OnAudioAvailable(PinMame.PinMameAudioInfo audioInfo)
+        private unsafe int OnAudioAvailable(PinMame.PinMameAudioInfo audioInfo)
         {
             Logger.Info($"OnAudioAvailable: audioInfo={audioInfo}");
 
             _audioInfo = audioInfo;
-            _audioBuffer = new short[audioInfo.BufferSize];
 
-            unsafe
+            _audioQueue.Clear();
+
+            for (int index = 0; index < _maxAudioBuffers; index++)
             {
-                fixed (void* ptr = _audioBuffer)
+                fixed (void* ptr = new short[_audioInfo.SamplesPerFrame * _audioInfo.Channels])
                 {
-                    for (int index = 0; index < BUFFERS; index++)
-                    {
-                        _al.BufferData(_audioBuffers[index],
+                    _al.BufferData(_audioBuffers[index],
                           _audioInfo.Channels == 2 ? BufferFormat.Stereo16 : BufferFormat.Mono16,
-                          ptr, _audioInfo.SamplesPerFrame, (int)_audioInfo.SampleRate);
-                    }
-
-                    _al.SourceQueueBuffers(_audioSource, _audioBuffers);
+                         ptr, _audioInfo.SamplesPerFrame * _audioInfo.Channels * 2, (int)_audioInfo.SampleRate);
                 }
             }
+
+            _al.SourceQueueBuffers(_audioSource, _audioBuffers);
+            _al.SourcePlay(_audioSource);
 
             return audioInfo.SamplesPerFrame;
         }
 
-        private int OnAudioUpdated(IntPtr framePtr, int samples)
+        private unsafe int OnAudioUpdated(IntPtr framePtr, int samples)
         {
             Logger.Trace($"OnAudioUpdated");
 
-            unsafe
+            var frame = new short[samples * _audioInfo.Channels];
+            Marshal.Copy(framePtr, frame, 0, samples * _audioInfo.Channels);
+
+            lock (_audioQueue)
             {
-
-                var data = (short*)framePtr;
-
-                for (int loop = 0; loop < samples * 2; loop++)
+                if (_audioQueue.Count >= _maxQueueSize)
                 {
-                    _audioBuffer[loop] = data[loop];
+                    Logger.Error("Clearing full audio frame queue.");
+
+                    _audioQueue.Clear();
                 }
+
+                _audioQueue.Enqueue(frame);
             }
-            return samples;
-        }
 
-        private void OnGameEnded()
-        {
-            Logger.Info($"OnGameEnded");
-        }
-
-        public unsafe void UpdateSound()
-        {
             _al.GetSourceProperty(_audioSource, GetSourceInteger.BuffersProcessed, out int buffersProcessed);
+
+            if (buffersProcessed <= 0)
+            {
+                return samples;
+            }
 
             while (buffersProcessed > 0)
             {
                 uint buffer = 0;
                 _al.SourceUnqueueBuffers(_audioSource, 1, &buffer);
 
-                fixed (void* ptr = _audioBuffer)
+                lock (_audioQueue)
                 {
-                    _al.BufferData(buffer,
-                        _audioInfo.Channels == 2 ? BufferFormat.Stereo16 : BufferFormat.Mono16, ptr, _audioInfo.SamplesPerFrame, (int)_audioInfo.SampleRate);
+                    if (_audioQueue.Count > 0)
+                    {
+                        frame = _audioQueue.Dequeue();
+
+                        fixed (void* ptr = frame)
+                        {
+                            _al.BufferData(buffer,
+                                  _audioInfo.Channels == 2 ? BufferFormat.Stereo16 : BufferFormat.Mono16,
+                                  ptr, frame.Length * 2, (int)_audioInfo.SampleRate);
+                        }
+                    }
                 }
 
                 _al.SourceQueueBuffers(_audioSource, 1, &buffer);
@@ -349,6 +361,16 @@ namespace PinMameSilk
             {
                 _al.SourcePlay(_audioSource);
             }
+
+            return samples;
+        }
+
+        private void OnGameEnded()
+        {
+            _al.SourceStop(_audioSource);
+            _al.SourceUnqueueBuffers(_audioSource, _audioBuffers);
+            
+            Logger.Info($"OnGameEnded");
         }
     }
 }
