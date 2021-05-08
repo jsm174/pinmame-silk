@@ -1,11 +1,12 @@
 ﻿using System.Numerics;
-using ImGuiNET;
 using LibDmd.Common;
 using NLog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
+using ImGuiNET;
+using ImGuiCustom;
 
 namespace PinMameSilk
 {
@@ -25,6 +26,12 @@ namespace PinMameSilk
         public static UIOverlayController Instance(IView window, IInputContext input, GL gl) =>
             _instance ?? (_instance = new UIOverlayController(window, input, gl));
 
+        private ImGuiFadeInOut _imGuiFadeInOut;
+        private Vector2 _lastPosition;
+        private double _inactivityTime;
+
+        private bool _overlayEnabled = true;
+
         private UIOverlayController(IView window, IInputContext input, GL gl)
         {
             _window = window;
@@ -35,31 +42,61 @@ namespace PinMameSilk
                window,
                _input);
 
+            _imGuiFadeInOut = new ImGuiFadeInOut();
+
             _pinMameController = PinMameController.Instance(_input);
             _dmdController = DmdController.Instance();
         }
 
         public void Render(double delta)
         {
+            var position = _input.Mice[0].Position;
+            var movement = position != _lastPosition;
+            var inside = (position.X >= -5f && position.X <= _window.Size.X + 5f &&
+                        position.Y >= -25f && position.Y <= _window.Size.Y + 10f);
+
+            if (_overlayEnabled)
+            {
+                if (movement && inside)
+                {
+                    _inactivityTime = 0;
+                }
+
+                if ((_inactivityTime > 1.5f && !inside) ||
+                    _inactivityTime > 6f)
+                {
+                    _overlayEnabled = false;
+                    _inactivityTime = 0;
+                }
+            }
+            else if (movement)
+            {
+               _overlayEnabled = inside;
+               _inactivityTime = 0;
+            }
+                
             _imGuiController.Update((float)delta);
 
-            var position = _input.Mice[0].Position;
+            var opacity = _imGuiFadeInOut.FadeInOut(.1f, .20f, 0, 1, _overlayEnabled);
+            ImGui.PushStyleVar(ImGuiStyleVar.Alpha, opacity);
 
-            if (position.X >= 0 && position.X <= _window.Size.X &&
-                position.Y >= -20 && position.Y <= _window.Size.Y)
-            {
-                ShowRomWindow();
-                ShowColorsWindow();
-                ShowStylesWindow();
-            }
+            ShowRomWindow(opacity);
+            ShowColorsWindow(opacity);
+            ShowStylesWindow(opacity);
+
+            ImGui.PopStyleVar();
 
             _imGuiController.Render();
+
+            _inactivityTime += delta;
+            _lastPosition = position;
         }
 
-        private void ShowRomWindow()
+        private void ShowRomWindow(float opacity)
         {
             ImGui.SetNextWindowPos(new Vector2(0, 0), ImGuiCond.Once);
             ImGui.SetNextWindowSize(new Vector2(500, 50), ImGuiCond.Once);
+            ImGui.SetNextWindowBgAlpha(opacity);
 
             ImGui.Begin("ROM", ImGuiWindowFlags.NoTitleBar |
                 ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize |
@@ -131,13 +168,14 @@ namespace PinMameSilk
             ImGui.End();
         }
 
-        private void ShowColorsWindow()
+        private void ShowColorsWindow(float opacity)
         {
             var styleChange = false;
             var paletteChange = false;
 
             ImGui.SetNextWindowPos(new Vector2(0, _window.Size.Y - 80), ImGuiCond.Always);
             ImGui.SetNextWindowSize(new Vector2(320, 80), ImGuiCond.Always);
+            ImGui.SetNextWindowBgAlpha(opacity);
 
             ImGui.Begin("Colors", ImGuiWindowFlags.NoTitleBar |
                 ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize |
@@ -185,10 +223,11 @@ namespace PinMameSilk
             ImGui.End();
         }
 
-        private void ShowStylesWindow()
+        private void ShowStylesWindow(float opacity)
         {
             ImGui.SetNextWindowPos(new Vector2(_window.Size.X - 310, (_window.Size.Y - 165) / 2), ImGuiCond.Always);
             ImGui.SetNextWindowSize(new Vector2(310, 165), ImGuiCond.Always);
+            ImGui.SetNextWindowBgAlpha(opacity);
 
             ImGui.Begin("Styles", ImGuiWindowFlags.NoTitleBar |
                 ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize |
