@@ -1,9 +1,6 @@
-﻿using System;
-using NLog;
+﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
-using Silk.NET.Core.Contexts;
-using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
