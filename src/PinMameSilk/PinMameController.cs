@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using LibDmd;
@@ -24,7 +25,7 @@ namespace PinMameSilk
         private PinMame.PinMame _pinMame;
         private List<PinMame.PinMameGame> _games = null;
         private DmdController _dmdController;
-
+        
         private PinMame.PinMameAudioInfo _audioInfo;
 
         private AL _al;
@@ -35,6 +36,8 @@ namespace PinMameSilk
         private int _maxQueueSize = 10;
         
         private int cursor;
+
+        public LinkedList<char> CData { get; } = new LinkedList<char>();
 
         public static readonly Dictionary<Key, PinMame.PinMameKeycode> _keycodeMap = new Dictionary<Key, PinMame.PinMameKeycode>() {
                 { Key.A, PinMame.PinMameKeycode.A },
@@ -156,6 +159,7 @@ namespace PinMameSilk
             _pinMame.OnDisplayUpdated += OnDisplayUpdated;
             _pinMame.OnAudioAvailable += OnAudioAvailable;
             _pinMame.OnAudioUpdated += OnAudioUpdated;
+            _pinMame.OnConsoleDataUpdated += OnConsoleDataUpdated;
             _pinMame.OnGameEnded += OnGameEnded;
             _pinMame.IsKeyPressed += IsKeyPressed;
 
@@ -220,12 +224,14 @@ namespace PinMameSilk
         {
             try
             {
+                 _dmdController.SetAltColorPath($"{_pinMame.RomPath}{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}altcolor{Path.DirectorySeparatorChar}{CurrentGame.Name}");
+                
                 _pinMame.StartGame(CurrentGame.Name);
             }
 
             catch (Exception e)
             {
-                Logger.Fatal(e);
+                Logger.Error(e);
             }
         }
 
@@ -365,11 +371,50 @@ namespace PinMameSilk
             return samples;
         }
 
+        private unsafe void OnConsoleDataUpdated(IntPtr dataPtr, int size)
+        {
+            if (size == 1)
+            {
+                char* ptr = (char*)dataPtr;
+
+                CData.AddLast(ptr[0]);
+
+                if (CData.Count <= 4)
+                {
+                    return;
+                }
+
+                CData.RemoveFirst();
+
+                if (CData.First.Value == 'P')
+                {
+                    var num = new string(new[] { CData.First.Next.Value, CData.First.Next.Next.Value });
+
+                    try
+                    {
+                        uint index = Convert.ToUInt32(num, 16);                       
+                        _dmdController.SetPalette(index);
+
+                        Logger.Info($"OnConsoleDataUpdated - palette={index}");
+
+                    }
+
+                    catch (FormatException e)
+                    {
+                        Logger.Warn(e, "Could not parse \"{0}\" as hex number.", num);
+                    }
+                }
+            }
+
+        }
+
         private void OnGameEnded()
         {
             _al.SourceStop(_audioSource);
             _al.SourceUnqueueBuffers(_audioSource, _audioBuffers);
-            
+
+            _dmdController.Reset();
+
             Logger.Info($"OnGameEnded");
         }
     }

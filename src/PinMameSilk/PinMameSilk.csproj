@@ -25,8 +25,8 @@
     <PackageReference Include="Silk.NET" Version="2.4.0" />
     <PackageReference Include="Silk.NET.OpenAL" Version="2.4.0" />
     <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.4.0" />
-    <PackageReference Include="PinMame" Version="0.1.0-preview.36" /> 
-    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.221" /> 
+    <PackageReference Include="PinMame" Version="0.1.0-preview.38" /> 
+    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.230" /> 
     <PackageReference Include="NLog" Version="4.7.9" />
   </ItemGroup>
 

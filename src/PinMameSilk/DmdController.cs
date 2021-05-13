@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using LibDmd;
 using LibDmd.Common;
+using LibDmd.Converter.Colorize;
 using NLog;
 using SharpGL.Shaders;
 using SharpGL.VertexBuffers;
@@ -24,6 +25,8 @@ namespace PinMameSilk
         private GL _gl;
        
         public Color DotColor { get; set; } = Color.FromArgb(255, 255, 88, 32);
+        public Coloring Coloring { get; set; }
+
         public DmdStyle DmdStyle { get; } = new DmdStyle();
 
         private VertexBufferArray _quadVbo;
@@ -60,6 +63,7 @@ namespace PinMameSilk
         private int _dmdWidth;
         private int _dmdHeight;
         private byte[] _frame;
+        private Palette _palette;
 
         public static DmdController Instance(IView window = null) =>
             _instance ?? (_instance = new DmdController(window));
@@ -133,6 +137,18 @@ namespace PinMameSilk
             _quadVbo.Unbind(_gl);
         }
 
+        public void SetAltColorPath(string path)
+        {
+            try
+            {
+                Coloring = new Coloring($"{path}{Path.DirectorySeparatorChar}pin2dmd.pal");
+            }
+
+            catch(Exception e)
+            {
+            }
+        }
+
         public void SetLayout(Dictionary<byte, byte> levels, int dmdWidth, int dmdHeight)
         {
             _levels = levels;
@@ -140,8 +156,21 @@ namespace PinMameSilk
             _dmdHeight = dmdHeight;
             _frame = new byte[dmdWidth * dmdHeight];
 
+            if (Coloring != null)
+            {
+                _palette = Coloring.DefaultPalette;
+            }
+
             _fboInvalid = true;
             _lutInvalid = true;
+            _hasFrame = true;
+        }
+
+        public unsafe void SetPalette(uint index)
+        {
+            _palette = Coloring.GetPalette(index);
+
+            InvalidatePalette();
         }
 
         public unsafe void SetFrame(IntPtr framePtr)
@@ -305,28 +334,43 @@ namespace PinMameSilk
 
                     byte[] data = new byte[3 * _levels.Count];
 
-                    foreach (var level in _levels)
+                    if (_palette != null)
                     {
-                        var alpha = 1.0f - DmdStyle.Tint.A / 255.0;
-                        var beta = DmdStyle.Tint.A / 255.0;
+                        int index = 0;
+                        foreach (var color in _palette.Colors)
+                        {
+                            data[index * 3] = color.R;
+                            data[index * 3 + 1] = color.G;
+                            data[index * 3 + 2] = color.B;
 
-                        int levelR = (int)(level.Key / 100f * DotColor.R);
-                        int levelG = (int)(level.Key / 100f * DotColor.G);
-                        int levelB = (int)(level.Key / 100f * DotColor.B);
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var level in _levels)
+                        {
+                            var alpha = 1.0f - DmdStyle.Tint.A / 255.0;
+                            var beta = DmdStyle.Tint.A / 255.0;
 
-                        ColorUtil.RgbToHsl((byte)levelR, (byte)levelG, (byte)levelB, out var dotHue, out var dotSat, out var dotLum);
-                        ColorUtil.RgbToHsl(DmdStyle.Tint.R, DmdStyle.Tint.G, DmdStyle.Tint.B, out var tintHue, out var tintSat, out var tintLum);
+                            int levelR = (int)(level.Key / 100f * DotColor.R);
+                            int levelG = (int)(level.Key / 100f * DotColor.G);
+                            int levelB = (int)(level.Key / 100f * DotColor.B);
 
-                        ColorUtil.HslToRgb(dotHue, dotSat, dotLum, out var dotRed, out var dotGreen, out var dotBlue);
-                        ColorUtil.HslToRgb(tintHue, tintSat, tintLum, out var tintRed, out var tintGreen, out var tintBlue);
+                            ColorUtil.RgbToHsl((byte)levelR, (byte)levelG, (byte)levelB, out var dotHue, out var dotSat, out var dotLum);
+                            ColorUtil.RgbToHsl(DmdStyle.Tint.R, DmdStyle.Tint.G, DmdStyle.Tint.B, out var tintHue, out var tintSat, out var tintLum);
 
-                        var red = (byte)(dotRed * alpha + tintRed * beta);
-                        var green = (byte)(dotGreen * alpha + tintGreen * beta);
-                        var blue = (byte)(dotBlue * alpha + tintBlue * beta);
+                            ColorUtil.HslToRgb(dotHue, dotSat, dotLum, out var dotRed, out var dotGreen, out var dotBlue);
+                            ColorUtil.HslToRgb(tintHue, tintSat, tintLum, out var tintRed, out var tintGreen, out var tintBlue);
 
-                        data[level.Value * 3] = red;
-                        data[level.Value * 3 + 1] = green;
-                        data[level.Value * 3 + 2] = blue;
+                            var red = (byte)(dotRed * alpha + tintRed * beta);
+                            var green = (byte)(dotGreen * alpha + tintGreen * beta);
+                            var blue = (byte)(dotBlue * alpha + tintBlue * beta);
+
+                            data[level.Value * 3] = red;
+                            data[level.Value * 3 + 1] = green;
+                            data[level.Value * 3 + 2] = blue;
+                        }
                     }
 
                     _gl.ActiveTexture(GLEnum.Texture1);
@@ -492,6 +536,12 @@ namespace PinMameSilk
         {
             _lutInvalid = true;
             _hasFrame = true;
+        }
+
+        public void Reset()
+        {
+            Coloring = null;
+            _palette = null;
         }
 
         private string ReadResource(string name)
