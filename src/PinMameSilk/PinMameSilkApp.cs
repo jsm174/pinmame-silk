@@ -23,7 +23,7 @@ namespace PinMameSilk
 
             var options = WindowOptions.Default;
             options.Size = new Vector2D<int>(128 * 6, 32 * 6);
-            options.Title = "PinMAME .NET Silk";
+            options.Title = "PinMAME Silk";
 
             var window = Window.Create(options);
 
