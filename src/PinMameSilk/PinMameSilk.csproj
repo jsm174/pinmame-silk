@@ -14,20 +14,13 @@
     <RuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
-  <!-- Remove when using custom silk -->
-  <!--
-  <PropertyGroup>
-    <RestoreSources>/Users/jmillard/git/Silk.NET/build/output_packages/;https://api.nuget.org/v3/index.json</RestoreSources>
-  </PropertyGroup>
-  -->
-
   <ItemGroup>
-    <PackageReference Include="Silk.NET" Version="2.4.0" />
-    <PackageReference Include="Silk.NET.OpenAL" Version="2.4.0" />
-    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.4.0" />
-    <PackageReference Include="PinMame" Version="0.1.0-preview.38" /> 
-    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.230" /> 
-    <PackageReference Include="NLog" Version="4.7.9" />
+    <PackageReference Include="Silk.NET" Version="2.6.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.21.1.1" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.6.0" />
+    <PackageReference Include="PinMame" Version="0.1.0-preview.40" /> 
+    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.274" /> 
+    <PackageReference Include="NLog" Version="4.7.10" />
   </ItemGroup>
 
    <ItemGroup>
@@ -38,12 +31,5 @@
     <EmbeddedResource Include="Shaders/Convert.frag" />
     <EmbeddedResource Include="Shaders/Convert.vert" />
  </ItemGroup>
-
- <!-- Remove when silk integrates openal -->
-
- <Target Name="Deploy" AfterTargets="Build">
-    <Copy Condition="'$(RuntimeIdentifier)' == 'win-x64'" SourceFiles="openal-soft/win-x64/soft_oal.dll" DestinationFiles="$(OutDir)/openal32.dll" SkipUnchangedFiles="true" />
-    <Copy Condition="'$(RuntimeIdentifier)' == 'win-x86'" SourceFiles="openal-soft/win-x86/soft_oal.dll" DestinationFiles="$(OutDir)/openal32.dll" SkipUnchangedFiles="true" />
- </Target>
 
 </Project>

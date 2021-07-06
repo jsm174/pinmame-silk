@@ -163,6 +163,8 @@ namespace PinMameSilk
             _pinMame.OnGameEnded += OnGameEnded;
             _pinMame.IsKeyPressed += IsKeyPressed;
 
+            _pinMame.SetHandleKeyboard(true);
+
             _dmdController = DmdController.Instance();
 
             _input = input;
@@ -191,9 +193,9 @@ namespace PinMameSilk
                 };
             }
 
-            _al = AL.GetApi();
+            _al = AL.GetApi(true);
 
-            ALContext alContext = ALContext.GetApi();
+            ALContext alContext = ALContext.GetApi(true);
             var device = alContext.OpenDevice("");
 
             if (device != null)
