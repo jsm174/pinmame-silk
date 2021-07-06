@@ -1,0 +1,37 @@
+name: Build
+on: [ push, pull_request ]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            exe: PinMameSilk.exe
+          - os: windows-latest
+            rid: win-x86
+            exe: PinMameSilk.exe
+          - os: macos-latest
+            rid: osx-x64
+            exe: PinMameSilk
+          - os: ubuntu-latest
+            rid: linux-x64
+            exe: PinMameSilk
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          cd src/PinMameSilk
+          dotnet publish PinMameSilk.csproj -c Release -r ${{ matrix.rid }} -p:PublishSingleFile=true -p:PublishTrimmed=true
+      - uses: actions/upload-artifact@v2
+        with:
+          name: PinMameSilk-${{ matrix.rid }}
+          path: src/PinMameSilk/bin/Release/netcoreapp3.1/${{ matrix.rid }}/publish/${{ matrix.exe }}
