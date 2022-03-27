@@ -141,7 +141,7 @@ namespace PinMameSilk
         {
             try
             {
-                Coloring = new Coloring($"{path}{Path.DirectorySeparatorChar}pin2dmd.pal");
+                //Coloring = new Coloring($"{path}{Path.DirectorySeparatorChar}pin2dmd.pal");
             }
 
             catch(Exception e)

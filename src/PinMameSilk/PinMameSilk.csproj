@@ -15,12 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET" Version="2.6.0" />
+    <PackageReference Include="Silk.NET" Version="2.14.0" />
     <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.21.1.1" />
-    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.6.0" />
-    <PackageReference Include="PinMame" Version="0.1.0-preview.40" /> 
-    <PackageReference Include="PinMame.Native" Version="3.4.0-preview.274" /> 
-    <PackageReference Include="NLog" Version="4.7.10" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.14.0" />
+    <PackageReference Include="PinMame" Version="0.2.0-preview.6" /> 
+    <PackageReference Include="PinMame.Native" Version="3.5.0-preview.46" /> 
+    <PackageReference Include="NLog" Version="4.7.15" />
   </ItemGroup>
 
    <ItemGroup>

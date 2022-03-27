@@ -159,11 +159,15 @@ namespace PinMameSilk
             _pinMame.OnDisplayUpdated += OnDisplayUpdated;
             _pinMame.OnAudioAvailable += OnAudioAvailable;
             _pinMame.OnAudioUpdated += OnAudioUpdated;
+            _pinMame.OnMechAvailable += OnMechAvailable;
+            _pinMame.OnMechUpdated += OnMechUpdated;
+            _pinMame.OnSolenoidUpdated += OnSolenoidUpdated;
             _pinMame.OnConsoleDataUpdated += OnConsoleDataUpdated;
             _pinMame.OnGameEnded += OnGameEnded;
             _pinMame.IsKeyPressed += IsKeyPressed;
 
             _pinMame.SetHandleKeyboard(true);
+            _pinMame.SetHandleMechanics(0);
 
             _dmdController = DmdController.Instance();
 
@@ -261,11 +265,6 @@ namespace PinMameSilk
         private void OnGameStarted()
         {
             Logger.Info("OnGameStarted");
-        }
-
-        private int IsKeyPressed(PinMame.PinMameKeycode keycode)
-        {
-            return _keypress[(int)keycode];
         }
 
         private void OnDisplayAvailable(int index, int displayCount, PinMame.PinMameDisplayLayout displayLayout)
@@ -373,6 +372,21 @@ namespace PinMameSilk
             return samples;
         }
 
+        private void OnMechAvailable(int mechNo, PinMame.PinMameMechInfo mechInfo)
+        {
+            Logger.Trace($"OnMechAvailable - mechNo={mechNo}, mechInfo={mechInfo}");
+        }
+
+        private void OnMechUpdated(int mechNo, PinMame.PinMameMechInfo mechInfo)
+        {
+            Logger.Trace($"OnMechUpdated - mechNo={mechNo}, mechInfo={mechInfo}");
+        }
+
+        private void OnSolenoidUpdated(int solenoid, bool isActive)
+        {
+            Logger.Trace($"OnSolenoidUpdated - solenoid={solenoid}, isActive={isActive}");
+        }
+
         private unsafe void OnConsoleDataUpdated(IntPtr dataPtr, int size)
         {
             if (size == 1)
@@ -418,6 +432,11 @@ namespace PinMameSilk
             _dmdController.Reset();
 
             Logger.Info($"OnGameEnded");
+        }
+
+        private int IsKeyPressed(PinMame.PinMameKeycode keycode)
+        {
+            return _keypress[(int)keycode];
         }
     }
 }
